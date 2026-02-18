@@ -33,3 +33,20 @@ arr=np.array([1,2,3,4,5])
 print(arr[1:4])
 print(arr[:2])
 print(arr[2:])
+#copy and view of array
+import numpy as np
+arr=np.array([1,2,3,4,5])
+arr_copy=arr.copy()
+arr_view=arr.view()
+#how to print the shape of an array
+#shape tells how many rows and coluns are present in the array
+import numpy as np
+arr=np.array([[1,2,3],[4,5,6]])
+print(arr.shape)
+#reshape of array
+#iif we want to change the shape of an array we can use the reshape mehthod 
+#reshape takes new shape as argument and returns the new array with the 
+import numpy as np
+arr=np.array([1,2,3,4,5,6])
+arr_reshaped=arr.reshape(2,3)
+print(arr_reshaped)
