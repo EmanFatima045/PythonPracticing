@@ -19,3 +19,15 @@ print(arr[1, 1, 0])
 import numpy as np
 arr = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
 print(arr[1, 1, 0])
+#how to get the second element from the numpy array
+import numpy as np
+arr=np.array([1,2,3,4,5])
+print(arr[1])
+#How to Access the 2d array
+import numpy as np
+arr=np.array([[4,5,6],[9,8,7],[6,5,4]])
+print(arr[1,2])
+#slicing of array
+import numpy as np
+arr=np.array([1,2,3,4,5])
+print(arr[1:4])
