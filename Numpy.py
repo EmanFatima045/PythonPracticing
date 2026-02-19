@@ -50,3 +50,14 @@ import numpy as np
 arr=np.array([1,2,3,4,5,6])
 arr_reshaped=arr.reshape(2,3)
 print(arr_reshaped)
+import numpy as np
+arr=np.array([1,2,3,4,5,6])
+#slicing of array
+#slicing is used to get a subset of array by specifying a range of indices
+newarr=np.array([1,2,3,4,5,6])
+print(newarr[1:4])
+#array searching
+#we can search for an element in an array using where mehtod
+import numpy as np
+arr=np.array([1,2,35,56])
+x=np.where(arr==35)
