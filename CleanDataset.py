@@ -40,12 +40,6 @@ sorted_data = unique_data[unique_data[:, 3].argsort()]
 print("\nSorted by Salary:")
 print(sorted_data)
 
-# Normalize
-min_val = np.min(sorted_data, axis=0)
-max_val = np.max(sorted_data, axis=0)
-
-normalized_data = (sorted_data - min_val) / (max_val - min_val)
-
 # Save cleaned & sorted data
 np.savetxt(
     "cleaned_employee_salary.csv",
@@ -55,29 +49,5 @@ np.savetxt(
     comments="",
     fmt="%.2f"
 )
-
 print("\nCleaned and Sorted file saved successfully!")
-
-# Include department column (assume index=2)
-# Numeric data will now include department as string
-departments = data[:, 2]  # Department names as strings
-
-# Combine numeric data and departments for sorting
-combined_data = np.column_stack((departments, numeric_data))
-
-# Sort first by department, then by salary
-# department is column 0, salary is column 4 after stacking
-sorted_combined = combined_data[np.lexsort((combined_data[:, 4].astype(float), combined_data[:, 0]))]
-
-# Save the sorted file
-np.savetxt(
-    "cleaned_employee_salary_by_department.csv",
-    sorted_combined,
-    delimiter=",",
-    header="Department,EmployeeID,Experience_Years,Age,Monthly_Salary",
-    comments="",
-    fmt="%s"
-)
-
-print("\nCleaned, Sorted, and Department-grouped file saved successfully!")
 
