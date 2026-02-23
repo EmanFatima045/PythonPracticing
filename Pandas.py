@@ -7,3 +7,7 @@ print(df)
 df.head() # it will print first 5 rows of dataframe
 df.tail() # it will print last 5 rows of dataframe
 print(df.values)
+variable=df[df["Monthly_Salary"] > 8820]
+print(variable)
+L=[1,3,2]
+sorted(L) 
