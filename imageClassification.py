@@ -22,10 +22,6 @@ from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.utils import load_img, img_to_array
 
 print("TensorFlow:", tf.__version__)
-
-# ─────────────────────────────────────────────
-# CONFIG
-# ─────────────────────────────────────────────
 DATASET_PATH = "D:/practice/test_set"   # unlabelled images anywhere inside
 IMG_SIZE     = (160, 160)
 N_CLUSTERS   = 3                         # cat | dog | other
@@ -36,9 +32,6 @@ CONFIDENCE_THRESHOLD = 0.60             # min distance ratio to call "confident"
 CAT_INDICES = set(range(281, 286))
 DOG_INDICES = set(range(151, 269))
 
-# ─────────────────────────────────────────────
-# 1. LOAD FEATURE EXTRACTOR  (no top, no training)
-# ─────────────────────────────────────────────
 print("\n[1/5] Loading MobileNetV2 feature extractor...")
 feat_extractor = MobileNetV2(
     input_shape=(*IMG_SIZE, 3),
@@ -56,9 +49,6 @@ imagenet_model = MobileNetV2(
 )
 print("      Done ✅")
 
-# ─────────────────────────────────────────────
-# 2. COLLECT ALL IMAGES (no labels needed)
-# ─────────────────────────────────────────────
 print("\n[2/5] Scanning dataset for images (no labels used)...")
 
 IMG_EXTS = {'.jpg', '.jpeg', '.png', '.bmp', '.webp', '.avif'}
@@ -74,9 +64,6 @@ all_paths = collect_images(DATASET_PATH)
 print(f"      Found {len(all_paths)} images")
 assert len(all_paths) >= N_CLUSTERS, "Need at least as many images as clusters."
 
-# ─────────────────────────────────────────────
-# 3. EXTRACT FEATURES WITH MOBILENETV2
-# ─────────────────────────────────────────────
 print(f"\n[3/5] Extracting features ({len(all_paths)} images)...")
 
 def extract_feature(img_path: str) -> np.ndarray:
@@ -102,9 +89,6 @@ for i, path in enumerate(all_paths):
 features = np.array(features)   # (N, 1280)
 print(f"      Feature matrix: {features.shape}")
 
-# ─────────────────────────────────────────────
-# 4. PCA  →  KMeans CLUSTERING  (sklearn only)
-# ─────────────────────────────────────────────
 print(f"\n[4/5] PCA ({PCA_COMPONENTS} components) + KMeans ({N_CLUSTERS} clusters)...")
 
 scaler = StandardScaler()
@@ -124,7 +108,7 @@ print(f"      Silhouette score: {sil:.3f}  (higher is better, max=1.0)")
 # ── Auto-label each cluster using ImageNet on ~30 samples per cluster ──────
 print("      Auto-labelling clusters via ImageNet...")
 
-CLUSTER_NAMES = {}   # cluster_id → 'cat' | 'dog' | 'other'
+CLUSTER_NAMES = {}   
 
 for cid in range(N_CLUSTERS):
     idxs    = np.where(cluster_labels == cid)[0]
@@ -157,7 +141,6 @@ for cid in range(N_CLUSTERS):
 
     print(f"      Cluster {cid}: cat={cat_votes}  dog={dog_votes}  → '{CLUSTER_NAMES[cid]}'")
 
-# guard: if two clusters got same name, keep the one with more votes, mark other 'other'
 seen = {}
 for cid, name in CLUSTER_NAMES.items():
     if name in seen:
@@ -173,9 +156,6 @@ for cid, name in CLUSTER_NAMES.items():
 
 print(f"      Final cluster map: {CLUSTER_NAMES}")
 
-# ─────────────────────────────────────────────
-# 5.  VISUALISE CLUSTERS (PCA 2-D projection)
-# ─────────────────────────────────────────────
 print("\n[5/5] Plotting cluster visualisation...")
 
 COLOR_MAP = {'cat': '#4ECDC4', 'dog': '#FF6B35', 'other': '#95A5A6'}
@@ -199,9 +179,6 @@ plt.tight_layout()
 plt.savefig("cluster_visualisation.png", dpi=150)
 plt.show()
 
-# ─────────────────────────────────────────────
-# PREDICTION FUNCTION
-# ─────────────────────────────────────────────
 def predict_image(img_path: str):
     """
     Unsupervised prediction:
@@ -216,17 +193,15 @@ def predict_image(img_path: str):
     print("="*55)
     print(f"  Image : {img_path}")
 
-    # — feature extraction —
+    
     raw_feat = extract_feature(img_path)                      # (1280,)
     x_s      = scaler.transform(raw_feat.reshape(1, -1))      # (1, 1280)
     x_p      = pca.transform(x_s)                             # (1, 128)
 
-    # — distances to all centroids —
     dists    = np.linalg.norm(kmeans.cluster_centers_ - x_p, axis=1)  # (K,)
     nearest  = int(np.argmin(dists))
     label    = CLUSTER_NAMES[nearest]
 
-    # — confidence proxy: how much closer is nearest vs second-nearest —
     sorted_dists = np.sort(dists)
     ratio        = 1.0 - (sorted_dists[0] / (sorted_dists[1] + 1e-9))
     confidence   = float(np.clip(ratio, 0, 1)) * 100
@@ -244,7 +219,6 @@ def predict_image(img_path: str):
     print(f"  Result           : {disp_label}")
     print("="*55)
 
-    # — bar data for all clusters —
     total_dist = dists.sum()
     bar_vals   = {CLUSTER_NAMES[i]: (1 - dists[i] / total_dist) for i in range(N_CLUSTERS)}
 
@@ -254,13 +228,13 @@ def predict_image(img_path: str):
                                gridspec_kw={'width_ratios': [1, 1]})
     fig.patch.set_facecolor('#1A1A2E')
 
-    # image panel
+    
     axes[0].imshow(display_img)
     axes[0].axis('off')
     axes[0].set_title(f"{disp_label}\nConfidence: {confidence:.1f}%",
                       fontsize=13, fontweight='bold', color=color, pad=12)
 
-    # bar panel
+   
     species  = ['cat', 'dog', 'other']
     vals     = [bar_vals.get(s, 0) for s in species]
     colors   = [COLOR_MAP[s] for s in species]
@@ -284,9 +258,6 @@ def predict_image(img_path: str):
     return label, confidence
 
 
-# ─────────────────────────────────────────────
-# TEST PREDICTIONS
-# ─────────────────────────────────────────────
 predict_image("D:/practice/test_set/dogs/dog.4001.jpg")
 predict_image("D:/practice/test_set/cats/cat.4003.jpg")
 predict_image("D:/practice/animal.avif")
